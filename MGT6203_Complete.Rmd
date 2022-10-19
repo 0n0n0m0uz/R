@@ -1,0 +1,1744 @@
+---
+title: "MGT6203_Complete"
+author: "NathanCook"
+date: "August 20, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# R code used in Module 1 
+
+## calling libraries
+
+```{r}
+if (!require(Ecdat)) install.packages("Ecdat")
+library(Ecdat)
+
+if (!require(ISLR)) install.packages("ISLR")
+library(ISLR)
+
+if (!require(GGally)) install.packages("GGally")
+library(GGally)
+
+if (!require(car)) install.packages("car")
+library(car)
+
+if (!require(psych)) install.packages("psych")
+library(psych)
+
+if (!require(MASS)) install.packages("MASS")
+library(MASS)
+
+if (!require(tidyverse)) install.packages("tidyverse")
+library(tidyverse)
+
+if (!require(stargazer)) install.packages("stargazer")
+library(stargazer)
+
+if (!require(knitr)) install.packages("knitr")
+library(knitr)
+
+if (!require(stringr)) install.packages("stringr")
+library(stringr)
+
+if (!require(ggExtra)) install.packages("ggExtra")
+library(ggExtra)
+
+if (!require(scatterplot3d)) install.packages("scatterplot3d")
+library(scatterplot3d)
+
+if (!require(faraway)) install.packages("faraway")
+library(faraway)
+
+if (!require(broom)) install.packages("broom")
+library(broom)
+
+if (!require(lars)) install.packages("lars")
+library(lars)
+
+if (!require(scales)) install.packages("scales")
+library(scales)
+
+if (!require(ROCR)) install.packages("ROCR")
+library(ROCR)
+
+if (!require(boot)) install.packages("boot")
+library(boot)
+```
+
+## use Housing dataset in the Ecdat package in R
+
+
+```{r}
+?Housing
+summary(Housing)
+str(Housing)
+```
+```{r}
+head(Housing,10)
+```
+
+Not sure where this came in, but it was commented out of original
+`table(housing[1:15,],caption='Housing Prices')`
+
+```{r}
+h1 <- data.frame(Housing$price, Housing$lotsize, Housing$bedrooms)
+head(h1,15)
+```
+
+
+## some useful statistics
+
+
+```{r}
+pp <- Housing$price
+pricesd <- sd(pp)
+mean(Housing$price)
+median(Housing$price)
+
+lot <- Housing$lotsize
+lotsd <- sd(lot)
+mean(Housing$lotsize)
+median(Housing$lotsize)
+
+res <- cor(h1)
+round(res,2)
+```
+
+
+Not sure where this came in, but it was commented out of original
+`res`
+
+## Plot Histogram of House Prices
+
+```{r}
+ggplot(data=Housing, aes(Housing$price)) + 
+                 geom_histogram(breaks=seq(25000, 190000, by =10000), 
+                 col="red", 
+                 fill="green", 
+                 alpha = .2) + 
+  labs(title="Histogram for price") +
+  labs(x="price", y="Count")
+```
+
+
+
+
+
+## Plot Histogram of Lotsize
+
+```{r}
+ggplot(data=Housing, aes(Housing$lotsize)) + 
+geom_histogram(breaks=seq(0, 17000, by =1000), 
+               col="red", 
+               fill="green", 
+               alpha = .2) + 
+              labs(title="Histogram for lotsize") +
+                labs(x="lotsize", y="Count")
+```
+
+
+
+## Correlation matrix
+
+```{r}
+summary(h1)
+ggpairs(h1, 
+        upper = list(continuous = wrap("cor", size = 9))) 
+```
+
+
+
+## simple linear regression model with lotsize as predictor
+
+```{r}
+a.lm <- lm(formula = price ~ lotsize , data = Housing)
+summary(a.lm)
+anova(a.lm)
+```
+
+
+
+
+## create dataframes called new, new2, and new3  
+
+```{r}
+new = data.frame(lotsize=3000)
+predict(a.lm, new, interval = "predict")
+
+# 
+new2 = data.frame(lotsize=5150)
+predict(a.lm, new2, interval = "predict")
+
+new3 = data.frame(lotsize=7300)
+predict(a.lm, new3, interval = "predict")
+```
+
+
+
+## Scatter Plot of price (y) against lotsize (x), including the linear regression line
+
+```{r}
+ggplot(Housing, aes(x=lotsize, y=price)) + geom_point() +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=FALSE,    # Don't add shaded confidence region
+              fullrange=TRUE) # Extend regression lines
+```
+
+
+
+## simple linear regression model with bedrooms predictor
+
+```{r}
+b.lm <- lm(formula = price ~ bedrooms, data = Housing)
+```
+
+
+
+## Scatter Plot of price (y) against bedrooms (x), including the linear regression line
+
+```{r}
+ggplot(Housing, aes(x=bedrooms, y=price)) + geom_point() +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=FALSE,    # Don't add shaded confidence region
+              fullrange=TRUE) # Extend regression lines
+```
+
+```{r}
+ab.lm <- lm(formula = price ~ lotsize + bedrooms, data = Housing)
+summary(ab.lm)
+anova(ab.lm)
+```
+
+
+
+
+## making a prediction (interpolation)
+
+```{r}
+newdata = data.frame(lotsize=3000, bedrooms = 2)
+
+predict(ab.lm, newdata, interval = "predict")
+```
+
+# Week 1 Office Hours
+```{r}
+WD = getwd()
+data_path = paste(WD, "/Week01/Dummycsv.csv", sep ="")
+data = read.csv(data_path,header = TRUE)
+```
+
+```{r}
+?ISLR::Hitters
+```
+
+```{r}
+head(Hitters)
+```
+
+
+```{r}
+# Hitters # No reason to see full data frame
+```
+
+```{r}
+summary(Hitters)
+```
+
+```{r}
+pairs(Hitters)
+```
+
+```{r}
+plot(Hitters$AtBat, Hitters$Hits)
+```
+
+```{r}
+linearModel1 = lm(formula = Salary ~ AtBat + Hits + HmRun, data = Hitters)
+summary(linearModel1)
+```
+
+
+```{r}
+linearModel = lm(formula = Salary ~., data= Hitters)
+linearModel$coefficients
+```
+
+```{r}
+summary(linearModel)
+```
+
+```{r}
+plot(linearModel)
+```
+
+
+```{r}
+Hitters$League = factor(Hitters$League)
+linearModel3 = lm(formula = Salary ~., data= Hitters)
+summary(linearModel3)
+```
+
+
+
+
+
+# R code used in Module 2 
+
+
+
+
+## do a ggplot histogram plot of price with binsize = 500
+```{r}
+ggplot(data=Housing, aes(Housing$price)) + 
+  geom_histogram(breaks=seq(1000, 200000, by =500), 
+                 col="red", 
+                 fill="green", 
+                 alpha = .2) + 
+  labs(title="Histogram for lotsize") +
+  labs(x="price", y="Count")
+```
+
+
+
+
+## do a ggplot histogram plot of price with binsize = 10000
+
+```{r}
+ggplot(data=Housing, aes(Housing$price)) + 
+  geom_histogram(breaks=seq(25000, 300000, by =10000), 
+                 col="red", 
+                 fill="green", 
+                 alpha = .2) + 
+  labs(title="Histogram for price") +
+  labs(x="price", y="Count")
+```
+
+
+
+
+## do a ggplot histogram plot of price with binsize = 50000
+
+```{r}
+ggplot(data=Housing, aes(Housing$price)) + 
+  geom_histogram(breaks=seq(25000, 300000, by =50000), 
+                 col="red", 
+                 fill="green", 
+                 alpha = .2) + 
+  labs(title="Histogram for price") +
+  labs(x="price", y="Count")
+```
+
+
+
+## boxplot 
+
+```{r}
+ggplot(data=Housing, mapping = aes(x = factor(bedrooms), y = price)) + 
+    geom_boxplot() + geom_jitter(width = 0.1)
+```
+
+
+
+
+## scatterplot
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  geom_smooth(mapping = aes(x = displ, y = hwy)) + 
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20), 
+        axis.text=element_text(size=20), axis.title=element_text(size=24,face="bold"))
+```
+
+
+
+
+## example 5 from scaterplot3d.f
+
+```{r }
+data(trees)
+s3d <- scatterplot3d(trees, type="h", highlight.3d=TRUE,
+                     angle=55, scale.y=0.7, pch=16, main="scatterplot3d - 5")
+```
+
+
+## Now adding some points to the "scatterplot3d"
+```{r}
+s3d <- scatterplot3d(trees, type="h", highlight.3d=TRUE,
+                     angle=55, scale.y=0.7, pch=16, main="scatterplot3d - 5")
+
+s3d$points3d(seq(10,20,2), seq(85,60,-5), seq(60,10,-10),
+             col="blue", type="h", pch=16)
+```
+
+
+## Now adding a regression plane to the "scatterplot3d"
+```{r}
+s3d <- scatterplot3d(trees, type="h", highlight.3d=TRUE,
+                     angle=55, scale.y=0.7, pch=16, main="scatterplot3d - 5")
+
+s3d$points3d(seq(10,20,2), seq(85,60,-5), seq(60,10,-10),
+             col="blue", type="h", pch=16)
+attach(trees)
+my.lm <- lm(Volume ~ Girth + Height)
+s3d$plane3d(my.lm, lty.box = "solid")
+```
+
+
+
+
+## correlation matrix
+```{r}
+h1 <- data.frame(Housing$price, Housing$lotsize, Housing$bedrooms, Housing$bathrms)
+
+ggpairs(h1, 
+        upper = list(continuous = wrap("cor", size = 9)))
+```
+
+
+
+## Anscombe's Quartet
+Four x-y datasets which have the same traditional statistical properties (mean, variance, correlation, regression line, etc.), yet are quite different.
+
+```{r}
+anscombe  # view the Anscombe dataset 
+```
+
+
+
+## run all four regression models
+```{r}
+r1 <- lm(y1 ~ x1, data = anscombe)
+summary(r1)
+
+r2 <- lm(y2 ~ x2, data = anscombe)
+summary(r2)
+
+r3 <- lm(y3 ~ x3, data = anscombe)
+summary(r3)
+
+r4 <- lm(y4 ~ x4, data = anscombe)
+summary(r4)
+```
+
+
+
+
+## plot all four Anscombe models 
+```{r}
+ggplot(anscombe, aes(x=x1, y=y1)) + geom_point((aes(size=3))) +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=TRUE,    #  add shaded confidence region
+              fullrange=TRUE)  + 
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20), 
+        axis.title=element_text(size=24,face="bold"))
+```
+
+
+
+
+```{r}
+ggplot(anscombe, aes(x=x2, y=y2)) + geom_point((aes(size=3))) +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=TRUE,    #  add shaded confidence region
+              fullrange=TRUE) + 
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20), 
+         axis.title=element_text(size=24,face="bold"))
+```
+
+
+```{r}
+ggplot(anscombe, aes(x=x3, y=y3)) + geom_point((aes(size=3))) +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=TRUE,    #  add shaded confidence region
+              fullrange=TRUE) + 
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20), 
+         axis.title=element_text(size=24,face="bold"))
+```
+
+
+```{r}
+ggplot(anscombe, aes(x=x4, y=y4)) + geom_point(aes(size=3)) +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=TRUE,    #  add shaded confidence region
+              fullrange=TRUE) + 
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20), 
+         axis.title=element_text(size=24,face="bold"))
+```
+
+
+
+## plot the 4 diagnostics plots for a linear model of Price vs. lotsize 
+
+
+```{r}
+a.lm <- lm(formula = price ~ lotsize , data = Housing)
+
+plot.new()
+plot(a.lm)
+
+par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
+plot(a.lm)  # Plot # plots the four diagnostics plots
+```
+
+
+
+ 
+## plot residual against fitted (predicted) price
+
+```{r}
+plot.new()
+a.res <- resid(a.lm)
+a.pred <- fitted(a.lm)
+
+plot.new()
+
+plot(a.pred, a.res, main = "Residuals vs. predicted price", 
+     xlab = "Predicted Price", ylab = "Residuals")
+```
+
+
+
+## ggplot residual against fitted (predicted) price
+
+ I didn't want to mess aroung with the built-in dataset Housing. So copy it to a new dataframe df
+```{r}
+df <-  Housing  %>% modelr::add_predictions(a.lm) %>% modelr::add_residuals(a.lm)
+
+
+ggplot(df,aes(x=pred, y=resid)) + geom_point() + labs(x = "Predicted Price") + labs(y = "Residuals") +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  theme(axis.text.x = element_text(size=15), axis.text.y = element_text(size=15),
+         axis.title=element_text(size=20,face="bold"))
+```
+
+
+
+
+## histogram of residuals is useful 
+
+Not sure why the abline() is there?
+```{r}
+
+# abline(0,0)
+
+hist(a.res, breaks="FD", xlab="Residuals", 
+     main="Histogram of residuals")
+```
+
+
+
+
+##  Two Regression to illustrate multicollinearity
+```{r}
+Reg1 <- lm(formula = mpg ~ cylinders, data = Auto)
+summary(Reg1)
+Reg2 <-  lm(formula = mpg ~ cylinders + displacement + weight, data = Auto)
+summary(Reg2)
+```
+
+
+
+## print Variance Inflation factors
+
+```{r}
+vif(Reg2)
+```
+
+```{r}
+h1 <- data.frame(Auto$cylinders, Auto$displacement, Auto$weight)
+head(h1,10)
+```
+```{r}
+ggpairs(h1, 
+        upper = list(continuous = wrap("cor", size = 9)))
+```
+
+
+
+
+# R Code used in Module 3 (Indicator Variables)
+
+## Use the setwd command to point to your folder where you have saved the EDSAL.csv file
+
+```{r}
+WD = getwd()
+data_path = paste(WD, "/Week04/EDSAL.csv", sep ="")
+```
+
+## edsal is a dataframe to store the contents of the EDAL.csv file
+```{r}
+edsal <- read_csv(data_path, col_types = list(
+  Education = readr::col_factor(c("HS", "UG", "GRAD")),
+  Experience = col_integer(),
+  Salary = col_double()))
+str(edsal)  # what happened to the first row of the csv file? 
+```
+
+```{r}
+head(edsal,10)
+```
+
+```{r}
+contrasts(edsal$Education)
+```
+
+
+
+## Using the mutate function, to create new variables
+## I've creating two new indicator variables called 
+## Graduate and HS which are determined by the value of Education
+## note the use of the pipe operator %>% to add these 
+## two new variables to edsal 
+
+```{r}
+edsal<- edsal %>%
+  mutate(Graduate = ifelse(Education=="GRAD",1,0)) %>%
+  mutate(HS = ifelse(Education=="HS",1,0))
+
+head(edsal,10)
+```
+
+```{r}
+ggplot(edsal, aes(x=Experience, y=Salary)) + 
+  geom_point() +
+  scale_colour_hue(l=50) + 
+  theme(axis.text.x = element_text(size=24), 
+        axis.text.y = element_text(size=24), 
+        axis.text=element_text(size=24),
+        axis.title=element_text(size=24,face="bold"))
+```
+
+
+```{r}
+RS.lm <- lm(Salary ~ Experience, data=edsal)
+summary(RS.lm)
+```
+
+  
+```{r}
+ggplot(edsal, aes(x=Experience, y=Salary)) + 
+  geom_point() +
+  scale_colour_hue(l=50) + 
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=FALSE,    # Don't add shaded confidence region
+              fullrange=TRUE) +
+  theme(axis.text.x = element_text(size=24), 
+        axis.text.y = element_text(size=24), 
+        axis.text=element_text(size=24),
+        axis.title=element_text(size=24,face="bold"))
+```
+
+
+
+```{r}
+DR1.lm <- lm(Salary ~ HS + Graduate, data=edsal)
+summary(DR1.lm)
+```
+
+
+```{r}
+DR2.lm <- lm(Salary ~ Experience + HS + Graduate, data=edsal)
+summary(DR2.lm)
+```
+
+## adding the INTERACTION VARIBLES to edsal using the mutate function in R
+
+```{r}
+edsal<- edsal %>%
+  mutate(H_Exp = HS*Experience) %>%
+  mutate(G_Exp = Graduate*Experience)
+
+head(edsal,10)
+```
+
+```{r}
+DR3.lm <- lm(Salary ~ Experience + HS + Graduate + H_Exp + G_Exp, data=edsal)
+summary(DR3.lm)
+```
+
+
+```{r}
+ggplot(edsal, aes(x=Experience, y=Salary, color=factor(Education)))  +
+  geom_point(mapping = aes(color=factor(Education))) +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=FALSE,    # Don't add shaded confidence region
+              fullrange=TRUE) + # Extend regression lines
+  theme(axis.text.x = element_text(size=24), 
+        axis.text.y = element_text(size=24), 
+        axis.text=element_text(size=24),
+        axis.title=element_text(size=24,face="bold"))
+```
+
+## AirBnB data
+```{r}
+data_path = paste(WD, "/Week04/la_listing_full.RData", sep ="")
+load(data_path)
+```
+
+
+
+```{r}
+la_listing <- la_listing_full  %>% 
+                select(price,
+                       number_of_reviews,
+                       beds,
+                       bathrooms,
+                       accommodates,
+                       reviews_per_month, 
+                       property_type, 
+                       room_type,
+                       review_scores_rating) %>% 
+                rename(Reviews = number_of_reviews) %>% 
+                rename(Beds = beds) %>% 
+                rename(Baths = bathrooms) %>% 
+                rename(Capacity = accommodates) %>% 
+                rename(Monthly_Reviews = reviews_per_month) %>% 
+                rename(Property_Type = property_type) %>% 
+                rename(Room_Type = room_type) %>% 
+                rename(Price = price) %>% 
+                rename(Rating = review_scores_rating)
+
+
+la_listing <-  la_listing %>% 
+                mutate(Price = str_replace(Price, "[$]", "")) %>% 
+                mutate(Price = str_replace(Price, "[,]", "")) %>% 
+                mutate(Price = as.numeric(Price)) %>% 
+                mutate(Room_Type = factor(Room_Type, 
+                                          levels = c("Shared room", 
+                                                     "Private room", 
+                                                     "Entire home/apt"))) %>% 
+                mutate(Capacity_Sqr = Capacity * Capacity) %>% 
+                mutate(Beds_Sqr = Beds * Beds) %>% 
+                mutate(Baths_Sqr = Baths * Baths) %>% 
+                mutate(ln_Price = log(1+Price)) %>% 
+                mutate(ln_Beds = log(1+Beds)) %>%
+                mutate(ln_Baths = log(1+Baths)) %>% 
+                mutate(ln_Capacity = log(1+Capacity)) %>% 
+                mutate(ln_Rating = log(1+Rating)) %>% 
+                mutate(Shared_ind = ifelse(Room_Type == "Shared room",1,0)) %>% 
+                mutate(House_ind = ifelse(Room_Type == "Entire home/apt",1,0)) %>% 
+                mutate(Private_ind = ifelse(Room_Type == "Private room",1,0)) %>% 
+                mutate(Capacity_x_Shared_ind = Shared_ind * Capacity) %>% 
+                mutate(H_Cap = House_ind * Capacity) %>% 
+                mutate(P_Cap = Private_ind * Capacity) %>% 
+                mutate(ln_Capacity_x_Shared_ind = Shared_ind * ln_Capacity) %>% 
+                mutate(ln_Capacity_x_House_ind = House_ind * ln_Capacity) %>% 
+                mutate(ln_Capacity_x_Private_ind = Private_ind * ln_Capacity)
+
+
+la_listing <- la_listing %>% 
+              dplyr::filter(Price < 1000 , 
+                            !is.na(Beds), 
+                            !is.na(Baths), 
+                            !is.na(Price), 
+                            !is.na(Rating)) %>% 
+                dplyr::filter(Capacity < 9) %>% 
+                mutate(ln_Reviews = log(1+Reviews)) %>% 
+                mutate(ln_Monthly_Reviews = log(1+Monthly_Reviews))
+```
+
+
+## We can examine if the number of people a listing can accomodate is related to price. 
+```{r}
+lm0 <- lm(Price ~ Capacity, data = la_listing)
+summary(lm0)
+```
+
+```{r}
+stargazer(lm0, type = "text")
+```
+
+
+```{r}
+ggplot(data = la_listing, aes(x = Capacity, y = Price)) +
+  geom_point(size=3) +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=TRUE,    #  add shaded confidence region
+              fullrange=TRUE) +
+  theme(axis.text.x = element_text(size=24), 
+        axis.text.y = element_text(size=24), 
+        axis.title=element_text(size=24,face="bold"))
+```
+
+
+## The moderating effect of type of room. Lets model that.
+```{r}
+lm1 <- lm(Price ~ Private_ind + House_ind, data = la_listing)
+summary(lm1)
+```
+
+```{r}
+stargazer(lm1, type = "text")
+```
+
+
+
+## Regression with Capacity and Dummy Variables for type of room:
+```{r}
+lm2 <- lm(Price ~ Capacity + Private_ind + House_ind, data = la_listing)
+summary(lm2)
+```
+
+```{r}
+stargazer(lm2, type = "text")
+```
+
+
+## Regression with Capacity,Dummy Variables and interaction between the two:
+```{r}
+lm3 <- lm(Price ~ Capacity+Private_ind + House_ind+P_Cap+H_Cap, data = la_listing)
+summary(lm3)
+```
+
+```{r}
+stargazer(lm3,type = "text")
+```
+
+# Office Hours for Week 3
+
+```{r}
+data("prostate")
+help(prostate)
+```
+
+
+
+
+## Understanding the data
+```{r}
+head(prostate)
+```
+
+```{r}
+nrow(prostate)
+```
+```{r}
+ncol(prostate)
+```
+
+
+## EXAMPLE OF BACKWARD ELIMINATION
+### Lm with all variables
+
+```{r}
+lmod1 = lm(lpsa ~ ., data = prostate)
+summary(lmod1)
+```
+```{r}
+lmod1 <- update(lmod1,. ~. -gleason)
+summary(lmod1)
+```
+```{r}
+lmod1 <- update(lmod1,. ~. -lcp)
+summary(lmod1)
+```
+```{r}
+lmod1 <- update(lmod1,. ~. -pgg45)
+summary(lmod1)
+```
+```{r}
+lmod1 <- update(lmod1,. ~. -age)
+summary(lmod1)
+```
+
+## STEPWISE
+```{r}
+data(fat)
+head(fat)
+```
+
+```{r}
+sample = seq(10,250, by = 10)
+testData = fat[sample, -c(1,3)]
+trainingData = fat[-sample, -c(1,3)]
+```
+
+
+
+### Step documentation
+```{r}
+help("step")
+```
+
+
+```{r}
+lmodA = lm(siri ~., data=trainingData)
+summary(lmodA)
+```
+
+```{r}
+lmodB = step(lmodA, trace=0)
+summary(lmodB)
+```
+
+
+
+## RMSE function
+```{r}
+rmse = function(x,y){
+  sqrt(mean((x-y)^2))
+}
+```
+
+
+
+### Getting error values, RMSE
+```{r}
+rmse_out <- rmse(lmodB$fitted.values, trainingData)
+```
+
+### prediction using lmodB on test data
+```{r}
+predictionB = predict(lmodB, testData)
+```
+### How good is your prediction
+```{r}
+rmse_outB <- rmse(predictionB, testData$siri) #rmse = 1.122
+```
+
+
+
+## Ridge regression
+```{r}
+rigmod = lm.ridge(siri ~., data=trainingData, lambda=seq(0,10,0.01))
+summary(rigmod)
+```
+
+
+
+
+### below shows you values of lambda vs gcv
+
+```{r}
+td = tidy(rigmod)
+
+g = glance(rigmod)
+```
+
+
+### plot of GCV versus lambda
+```{r}
+ggplot(td, aes(lambda, GCV)) + 
+  geom_line() +
+  geom_vline(xintercept = g$lambdaGCV, 
+             col = "red", 
+             lty = 2)
+```
+
+
+
+### below helps select a good tuning parameter lambda
+```{r}
+matplot(rigmod$lambda, t(rigmod$coef), 
+        type = "l", 
+        xlab = expression(lambda), 
+        ylab=expression(hat(beta)))
+```
+
+```{r}
+which.min(rigmod$GCV) #good tuning parameter => lambda = 0.05 at the 6th data point
+```
+
+
+
+### now do prediction on your model using test data
+```{r}
+ypredTest = cbind(1, as.matrix(testData[,-1])) %*% coef(rigmod)[6,]
+rmse_ypredTest <- rmse(ypredTest, testData$siri) #rmse = 1.13
+```
+
+
+
+## lasso regression
+```{r}
+trainx = as.matrix(trainingData[-1])
+trainy = trainingData$siri
+help(lars)
+lassomodel  = lars(trainx, trainy)
+summary(lassomodel)
+```
+
+```{r}
+plot(lassomodel)
+```
+
+
+### compute the crossvalidation choice for t:
+```{r}
+set.seed(123)
+cvmod = cv.lars(trainx, trainy)
+```
+```{r}
+cvmod$index[which.min(cvmod$cv)] #min error = 0.788
+```
+
+
+
+
+Keep in mind, that we first compute the parameters of the model (lambda or s in lasso case)
+Then we use parameters for a predition
+We rate model based on error(RMSE) values -> you can compare different models this way
+```{r}
+testx = as.matrix(testData[-1])
+predlarsTest = predict(lassomodel, testx, s = 0.788, mode = "fraction")
+rmse_predlars <- rmse(testData$siri, predlarsTest$fit) #rmse = 1.112
+```
+
+Summary of 3 models
+Stepwise, rmse = 1.122
+Ridge regression, rmse = 1.13
+Lasso regression, rmse = 1.112  <--- select this one with the lowest error
+
+# R code for Module 4
+
+![Various Log Transformations](Week05/VariousLogTransformations.PNG) 
+<!-- Session > Set Working Directory > To Source File in order for Shift+Click filename to work -->
+
+### Increasing x by 1% increases ln(x) by 0.00995033085316808284821535754426 ~ 0.01
+
+## Read top 100 cities in the us
+
+```{r}
+data_path = paste(WD, "/Week05/Cities.csv", sep ="")
+```
+
+
+## An Example of a Nonlinear Relationship US city Population and Rank
+```{r}
+CitPop <- read_csv(data_path, col_types = list(
+                                Rank = col_integer(),
+                                Population2010 = col_integer(),
+                                Population2012 = col_integer(),
+                                Growth = col_integer()))
+
+str(CitPop)
+```
+
+```{r}
+head(CitPop,10)
+```
+
+
+```{r}
+ggplot(CitPop, aes(x=Rank, y=Population2012)) + 
+  geom_point() + 
+  labs(x = "Rank") + 
+  labs(y = "Population 2012 (Millions)") +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm, 
+              size = 1.5) +   # Add linear regression lines  
+  theme(axis.text.x = element_text(size=15), 
+        axis.text.y = element_text(size=15),
+        axis.title=element_text(size=20,face="bold")) +
+  scale_y_continuous(breaks=seq(0,10000000,1000000),
+                     labels = scales::unit_format(NULL, 1e-6))
+```
+
+
+
+ 
+## Model A:  we use the Housing dataset in the Ecdata Package in R
+```{r}
+?Housing
+summary(Housing)
+```
+
+
+
+## Create a dataframe h1 which has the four columns from Housing - price, lotsize, bedrooms, and bathrms 
+```{r}
+h1 <- data.frame(Housing$price, Housing$lotsize, Housing$bedrooms, Housing$bathrms)
+
+head(h1,15)  # in case you want to view the first 15 records in h1
+```
+
+
+
+
+
+## create natural log of the variables price and lotsize and also the square of lotsize and add these new variables to h1
+```{r}
+h1 <- h1 %>%
+  mutate(Ln_price = log(Housing.price)) %>%
+  mutate(Ln_lotsize = log(Housing.lotsize)) %>%
+  mutate(lot_square = Housing.lotsize*Housing.lotsize) 
+
+head(h1,15)
+```
+
+
+         
+
+
+## Model A:  price = b0 + b1*lotsize  Linear-linear model
+```{r}
+a.lm <- lm(formula = price ~ lotsize , data = Housing)
+summary(a.lm)
+```
+
+
+
+## Model A: Scatter Plot with regression line 
+```{r}
+ggplot(Housing, aes(x=lotsize, y=price)) + 
+  geom_point() + 
+  labs(x = "lotsize") + 
+  labs(y = "price") +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm, size = 1.5) +   # Add linear regression lines  
+  theme(axis.text.x = element_text(size=15), 
+        axis.text.y = element_text(size=15),
+        axis.title=element_text(size=20,face="bold"))
+```
+
+
+
+## Model A:  Diagnostics Plots
+```{r}
+par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
+plot(a.lm) # Plot # plots the four diagnostics plots
+```
+
+
+
+
+## Model B:  price = b0 + b1*log(lotsize)  Linear-Log Model
+```{r}
+b.lm <- lm(formula = Housing.price ~ Ln_lotsize , data = h1)
+summary(b.lm)
+```
+
+
+
+## Model B: Scatter Plot with regression line 
+```{r}
+ggplot(h1, aes(x=Ln_lotsize, y=Housing.price)) + 
+  geom_point() + 
+  labs(x = "Ln(lotsize)") + 
+  labs(y = "price") +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=TRUE,    # Don't add shaded confidence region
+              fullrange=TRUE) + # Extend regression lines
+  theme(axis.text.x = element_text(size=15), 
+        axis.text.y = element_text(size=15),
+        axis.title=element_text(size=20,face="bold"))
+```
+
+
+
+## Model B:  Diagnostics Plots
+
+```{r}
+par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
+plot(b.lm)
+```
+
+
+## Model C:  log(price) = b0 + b1*lotsize  Log-Linear Model
+```{r}
+c.lm <- lm(formula = Ln_price ~ Housing.lotsize , data = h1)
+summary(c.lm)
+```
+
+
+
+## Model C: Scatter Plot with regression line 
+```{r}
+ggplot(h1, aes(x=Housing.lotsize, y=Ln_price)) + 
+  geom_point() + 
+  labs(x = "lotsize") + 
+  labs(y = "Ln(price)") +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=TRUE,    # Don't add shaded confidence region
+              fullrange=TRUE) + # Extend regression lines
+      theme(axis.text.x = element_text(size=15), axis.text.y = element_text(size=15),
+        axis.title=element_text(size=20,face="bold"))
+```
+
+
+
+## Model C:  Diagnostics Plots
+```{r}
+par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
+plot(c.lm)
+```
+
+
+
+
+## Model D:  log(price) = b0 + b1*log(lotsize)  Log-Log Model
+```{r}
+d.lm <- lm(formula = Ln_price ~ Ln_lotsize , data = h1)
+summary(d.lm)
+```
+
+
+
+## Model D: Scatter Plot with regression line 
+```{r}
+ggplot(h1, aes(x=Ln_lotsize, y=Ln_price)) + 
+  geom_point() +
+  scale_colour_hue(l=50) + # Use a slightly darker palette than normal
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=TRUE,    # Don't add shaded confidence region
+              fullrange=TRUE) + # Extend regression lines
+  theme(axis.text.x = element_text(size=15), 
+        axis.text.y = element_text(size=15),
+        axis.title=element_text(size=20,face="bold"))
+```
+
+
+
+## Model D:  Diagnostics Plots
+```{r}
+
+par(mfrow = c(2, 2))  # Split the plotting panel into a 2 x 2 grid
+plot(d.lm) # Plot # plots the four diagnostics plots
+```
+
+
+## Model E:  price = b0 + b1*lotsize + b2*lotsize2  Polynomial (Quadratic) Model
+```{r}
+e.lm <- lm(formula = Housing.price ~ Housing.lotsize + lot_square, data = h1)
+summary(e.lm)
+```
+
+
+# R Code for Module 5
+
+## Logistical modeling of binary output
+
+### Load GradesR
+
+```{r load_GradesR}
+WD = getwd()
+data_path = paste(WD, "/Week06/GradesR.csv", sep ="")
+logit_grade <- read_csv(data_path, col_types = list(
+  Student = col_integer(),
+  Grade = col_integer(),
+  Hours = col_double()))
+```
+
+
+
+```{r}
+View(head(logit_grade,10))
+```
+
+
+
+### Boxplot of Hours vs. Grade  (Need to use Grade as a factor)
+```{r}
+ ggplot(data=logit_grade, aes(x=factor(Grade), y = Hours, fill=factor(Grade))) +
+  geom_boxplot() +
+  ggtitle("BoxPlot for Hours of Studying vs. Grade") + theme(plot.title = element_text(size = 20, face = "bold")) +
+  labs(x="Grade", y="Hours") +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=18,face="bold"))
+```
+
+
+
+
+### Scatter Plot + Linear Regression line of Grade vs. Hours
+```{r}
+ggplot(logit_grade, aes(x=Hours, y=Grade)) + geom_point() +
+  scale_colour_hue(l=50) +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=18,face="bold")) +
+  geom_smooth(method=lm,   # Add linear regression lines
+              se=FALSE,    # Don't add shaded confidence region
+              fullrange=TRUE)
+```
+
+
+
+### Using Linear Regression to Model Binary Outcomes
+```{r}
+a.lm <- lm(formula = Grade ~ Hours, data = logit_grade)
+summary(a.lm)
+anova(a.lm)
+```
+
+
+
+
+### Scatter Plot + Linear Regression line of Grade vs. Hours + Logistic Model Curve
+```{r}
+ggplot(logit_grade, aes(x=Hours, y=Grade)) + geom_point() +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=18,face="bold")) +
+# add logit curve
+  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE) +
+#add the regression line
+    geom_smooth(method=lm,  color="red", # Add linear regression lines
+              se=FALSE,    # Don't add shaded confidence region
+              fullrange=TRUE)
+```
+
+
+
+## Logarithmic Logistical
+
+### Load oddslogodds.csv
+```{r}
+WD = getwd()
+data_path = paste(WD, "/Week06/oddslogodds.csv", sep ="")
+ol <- read_csv(data_path, col_types = list(
+  p = col_double(),
+  odds = col_double(),
+  logodds = col_double()))
+```
+
+```{r}
+View(ol)
+```
+
+
+
+### Plot Probability, Odds, and Log of Odds
+```{r}
+ggplot(ol, aes(x=p)) +
+  geom_line(aes(y=odds), colour ="red") +
+  geom_line(aes(y=logodds), colour ="blue") +
+  ggtitle("Odds (Red) and log(odds) (Blue) vs. p") + theme(plot.title = element_text(size = 20, face = "bold")) +
+  labs(x="p", y="Odds & log(odds)") +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=18,face="bold"))
+```
+
+
+
+### plot of log odds vs odds
+```{r}
+ggplot(ol, aes(x=odds)) +
+  geom_line(aes(y=logodds), colour ="Black") +
+  ggtitle("log(odds) vs. Odds") + theme(plot.title = element_text(size = 18, face = "bold")) +
+  labs(x="odds", y="log(odds)") +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=18,face="bold"))
+```
+
+
+ 
+## Using ISLR Default dataframe to explore logit models
+
+### Load Default dataseet
+```{r}
+str(ISLR::Default)
+
+df <- ISLR::Default
+df<- df %>%
+  mutate(dft = ifelse(default=="Yes",1,0)) %>%
+  mutate(stdt = ifelse(student=="Yes",1,0))
+
+str(df)
+```
+
+
+
+### Scatterplot of Income vs. Balance (Default in Blue)
+```{r}
+ggplot(data = df) +
+  geom_point(mapping = aes(x = balance, y = income, color = default)) +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=18,face="bold"))
+```
+
+
+
+### BoxPlot for Balance vs. Default Status
+```{r}
+ggplot(data=df, aes(x=default, y = balance, fill=default)) +
+  geom_boxplot() +
+  ggtitle("BoxPlot for Balance vs. Default Status") + theme(plot.title = element_text(size = 18, face = "bold")) +
+#  labs(title="BoxPlot for Balance vs. Default Status") +
+  labs(x="Default", y="Balance") +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=18,face="bold"))
+```
+
+
+
+
+###  Run different logit models
+
+#### Model1 has no predictor variables
+```{r}
+Model1 <- glm(dft ~ 1 , data = df, family = "binomial")
+summary(Model1)
+```
+
+
+
+##### Get the count of defaulters and non-defaulters in the dataframe df using the group_by function
+```{r}
+df %>%
+  group_by(default) %>%
+  summarise(n=n())
+```
+
+
+
+#### Model 2: logit(p) = b0 + b1*stdt (single 0/1 predictor variable)
+```{r}
+Model2 <- glm(dft ~ stdt , data = df, family = "binomial")
+summary(Model2)
+```
+
+
+#### Model 3: logit(p) = b0 + b1*balance (single continuous predictor variable)
+```{r}
+Model3 <- glm(dft ~ balance, data = df, family = "binomial")
+summary(Model3)
+```
+
+
+
+##### plot default rate for the entire population of students and non-students
+```{r}
+ggplot(df, aes(x=balance, y=dft)) + geom_point() +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=18,face="bold")) +
+  # add logit curve
+  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+```
+
+
+
+#### Model 4: logit(p) = b0 + b1*balance + b2*income + b3*stdt
+```{r}
+Model4 <- glm(dft ~ balance + income + stdt, data = df, family = "binomial")
+summary(Model4)
+```
+
+
+
+##### boxplot
+```{r}
+ggplot(data=df, aes(x=student, y = balance, fill=student)) +
+  geom_boxplot() +
+  ggtitle("BoxPlot for Balance vs. Student Status") + theme(plot.title = element_text(size = 20, face = "bold")) +
+  #  labs(title="BoxPlot for Balance vs. Student Status") +
+  labs(x="Student", y="Balance") +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=24,face="bold"))
+```
+
+
+##### make predictions using Model 4
+```{r}
+df <-  df %>%
+  mutate(pred_prob_model4 = predict(Model4, newdata = ., type = "response")) %>%
+  mutate(pred_outcome_model4 = ifelse(pred_prob_model4 >= 0.5,1,0))
+# we are using 0.5 as cutoff for predicting Y=1.
+View(df)
+```
+
+
+
+##### plot default rates for students and non-students
+```{r}
+ggplot(data=df, aes(x=balance, y=pred_prob_model4, group=student, colour=student)) +
+  geom_line() +
+  geom_hline(aes(yintercept=0.058), colour="blue", linetype="dashed")+
+  geom_hline(aes(yintercept=0.015), colour="#990000", linetype="dashed") +
+  labs(x="Balance", y="Default Rate") +
+  theme(axis.text.x = element_text(size=20), axis.text.y = element_text(size=20),
+        axis.text=element_text(size=20), axis.title=element_text(size=24,face="bold"))
+```
+
+
+
+##### two-way Cross Tab table of Actual outcome and predictored Outcome
+```{r}
+xtabs(~dft + pred_outcome_model4, data = df)
+```
+
+
+##### Same thing can be computed with tally
+```{r}
+tally(group_by(df,dft,pred_outcome_model4))
+```
+
+
+
+##### ROC Curve
+```{r}
+pred <- prediction(df$pred_prob_model4,df$dft) # create a prediction object in R
+class(pred)
+```
+```{r}
+perf <- performance(pred, "tpr", "fpr") # tpr and fpr are true and false positive rates
+plot(perf, colorize=T)
+```
+
+
+
+##### calculate Area Under the Curve for this Logit Model
+```{r}
+auc.perf <-  performance(pred, measure = "auc")
+auc.perf@y.values
+```
+
+
+
+##### Make predictions (using model 4) for original dataset with 0.9 as cutoff
+```{r}
+df <- df%>%
+  mutate(pred_outcome_0.90 = ifelse(pred_prob_model4 >= 0.90,1,0))
+```
+```{r}
+xtabs(~dft + pred_outcome_0.90, data = df)
+```
+
+
+
+##### Same thing can be computed with tally
+```{r}
+tally(group_by(df,dft,pred_outcome_0.90))
+```
+
+# R Code for PPT on Resampling Methods
+
+## Attach Auto for simplicity
+```{r}
+attach(Auto)
+```
+
+
+## Set the seed for pseudo-random generator
+```{r}
+set.seed (1)
+```
+
+## Side...plot mpg as a function of horsepower
+```{r}
+ggplot(data = Auto, aes(x = horsepower, y = mpg)) +
+  geom_point()
+```
+
+
+## Create an index for training set
+
+We need to randomly select 196 units from the original data set so first create an index 
+```{r}
+train <- sample(392,196) 
+```
+## We now run a linear regression using the training data.
+```{r}
+lm.fit <- lm(mpg~horsepower , data = Auto, subset=train)
+summary(lm.fit)$coef
+```
+
+
+### Determine MSE
+use predict() to estimate the response for all 392 observations use mean() to calculate MSE for the observations in the validation set
+```{r}
+mean((mpg - predict(lm.fit,Auto))[-train]^2)
+```
+
+## Add regression to plot
+```{r}
+ggplot(data = Auto, aes(x = horsepower, y = mpg)) +
+  geom_point() +
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ x") 
+# formulas use the aesthetics, not the variable names!!
+```
+
+
+## Side investigation, use orthogonal polynomial of order 1
+```{r}
+summary(lm(mpg~ poly(horsepower, 1) , data = Auto, subset=train))$coef
+```
+```{r}
+summary(lm(mpg~ poly(horsepower, 1, raw = TRUE) , data = Auto, subset=train))$coef
+```
+
+```{r}
+ggplot(data = Auto, aes(x = horsepower, y = mpg)) +
+  geom_point() +
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ x", color = 'black', se = FALSE, size = 2) +
+# formulas use the aesthetics, not the variable names!!
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ poly(x, 1)", color = '#7fc97f', se = FALSE)
+```
+
+
+## Now run a linear regression against an orthogonal polynomial of order 2
+```{r}
+lm.fit2=lm(mpg~ poly(horsepower ,2) ,data=Auto, subset=train)
+mean((mpg-predict(lm.fit2,Auto))[-train]^2) 
+```
+
+### See the summary coefs
+```{r}
+summary(lm(mpg~poly(horsepower ,2),data=Auto, subset=train))$coef
+```
+
+```{r}
+ggplot(data = Auto, aes(x = horsepower, y = mpg)) +
+  geom_point() +
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ x", color = 'black', se = FALSE, size = 2) +
+# formulas use the aesthetics, not the variable names!!
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ poly(x, 1)", color = '#7fc97f', se = FALSE) +
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ poly(x, 2)", color = '#beaed4', se = FALSE)
+```
+
+##Now order 3. Because it's orthogonal, the initial coefficients will match lower orders 
+```{r}
+lm.fit3=lm(mpg~poly(horsepower ,3),data=Auto,
+           subset=train)
+mean((mpg-predict(lm.fit3,Auto))[-train]^2)
+```
+```{r}
+summary(lm(mpg~poly(horsepower ,3),data=Auto, subset=train))$coef
+```
+
+
+
+```{r}
+ggplot(data = Auto, aes(x = horsepower, y = mpg)) +
+  geom_point() +
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ x", color = 'black', se = FALSE, size = 2) +
+# formulas use the aesthetics, not the variable names!!
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ poly(x, 1)", color = '#7fc97f', se = FALSE) +
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ poly(x, 2)", color = '#beaed4', se = FALSE) +
+  geom_smooth(data = Auto[train,], method = "lm", formula = "y ~ poly(x, 3)", color = '#fdc086', se = FALSE)
+```
+
+## LOOCV 
+Run a linear model using glm function in R.
+The boot package has cross validation functions.
+
+### The cv.glm does cross validation and the default sets K equal to the number of observations in data which gives the leave-one-out cross-validation (LOOCV)
+
+```{r}
+glm.fit=glm(mpg~horsepower ,data=Auto)
+cv.err=cv.glm(Auto,glm.fit)
+cv.err$delta
+```
+
+
+### We can repeat this procedure for increasingly complex polynomial fits.
+Look at polynomial fits up to order 5
+```{r}
+cv.error=rep(0,5)  # creat cv.error as an vector of 5 values all of which are initialized to 0
+for (i in 1:5){
+  glm.fit=glm(mpg~poly(horsepower ,i),data=Auto)
+  cv.error[i]=cv.glm(Auto,glm.fit)$delta[1]
+}
+cv.error
+```
+
+We see a sharp drop in the estimated test MSE between the linear and quadratic fits, but then no clear improvement from using higher-order polynomials.
+
+
+### k-fold cross-Validation with K=10
+```{r}
+set.seed(17)
+```
+
+
+Look at polynomials of order up to 10
+```{r}
+cv.error.10=rep(0,10)
+for (i in 1:10){
+  glm.fit=glm(mpg~poly(horsepower ,i),data=Auto)
+  cv.error.10[i]=cv.glm(Auto,glm.fit,K=10)$delta[1]
+}
+cv.error.10
+```
+
+
+# R code used in Module 6 Treatment Effect
+
+## Import Star data from Ecdat
+only analyze small and regular size classes
+```{r}
+mydata <- dplyr::filter(Ecdat::Star, classk=="small.class"|classk=="regular") 
+str(mydata)
+```
+
+### Mutate to factorize and use 1,0 instead of 2,1
+```{r}
+mydata <- mydata %>%
+  mutate(totalscore = tmathssk + treadssk) %>%
+  mutate(small = ifelse(classk=="small.class",1,0)) %>%
+  mutate(boy = ifelse(sex=="boy",1,0)) %>%
+  mutate(whiteother = ifelse(race=="white"|race=="other",1,0)) %>%
+  mutate(freelunch = ifelse(freelunk=="yes",1,0)) %>%
+  mutate(schoolj = factor(schidkn))
+```
+
+
+### get summary stats for small= 0 and small = 1
+```{r}
+describeBy(mydata, mydata$small) # describeBy is from the psych package in R
+```
+
+
+
+### summary stats across all data
+```{r}
+describe(mydata)
+```
+
+### Please run a linear regression to understand for the case of small= 0
+```{r}
+reg_0 <- lm(totalscore ~  1, data = dplyr::filter(mydata,small == 0))
+summary(reg_0)
+```
+
+### Please run a linear regression to understand for the case of small= 1
+```{r}
+reg_1 <- lm(totalscore ~  1, data = dplyr::filter(mydata,small == 1))
+summary(reg_1)
+```
+
+### Please run a linear regression using all the data using dummy variable for small
+```{r}
+reg_all <- lm(totalscore ~  small, data = mydata)
+summary(reg_all)
+```
+
+### Add Teacher Experience to the model 
+```{r}
+reg_2 <- lm(totalscore ~  small + totexpk, data = mydata)
+summary(reg_2)
+```
+
+### Add School fixed effects to the model reg-all
+```{r}
+reg_3 <- lm(totalscore ~  small + schoolj, data = mydata)
+summary(reg_3)
+```
+
+### Add School fixed effects to the model reg_2
+```{r}
+reg_4 <- lm(totalscore ~  small + totexpk + schoolj, data = mydata)
+summary(reg_4)
+```
+
+### check if small is randomly assigned
+```{r}
+reg_5 <- lm(small ~ boy + whiteother + totexpk + freelunch, data = mydata)
+summary(reg_5)
+```
+
+
+
+
